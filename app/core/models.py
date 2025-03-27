@@ -320,6 +320,32 @@ class PermissionType(AbstractBaseModel):
             return f"{self.name}"
 
 
+class PermissionHistory(AbstractBaseModel):
+    """
+    History of user permissions
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="user_permission_history"
+    )
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    permission_type = models.ForeignKey(PermissionType, on_delete=models.CASCADE)
+    practice_area = models.ForeignKey(PracticeArea, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="user_permission_created_by"
+    )
+    updated_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        username = self.user.username
+        project_name = self.project.name
+        permission_type_name = self.permission_type.name
+        str_val = f"User: {username} / Permission Type: {permission_type_name}/ Project: {project_name}"
+        if self.practice_area:
+            str_val += f" / Practice Area: {self.practice_area.name}"
+        return str_val
+
+
 class UserPermission(AbstractBaseModel):
     """
     User Permissions
