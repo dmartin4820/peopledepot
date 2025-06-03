@@ -5,11 +5,14 @@ from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import mixins
+from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 
 from ..models import Affiliate
 from ..models import Affiliation
@@ -149,6 +152,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+
+    @action(methods=["patch"], detail=True, permission_classes=permission_classes)
+    def set_leadership_type(self, request, pk=None):
+        try:
+            project = Project.objects.get(pk=pk)
+            leadership_type = LeadershipType.objects.get(
+                pk=request.data["leadership_type"]
+            )
+            project.leadership_type = leadership_type
+            project.save()
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 @extend_schema_view(
